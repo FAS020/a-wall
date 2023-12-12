@@ -499,9 +499,30 @@
             document.addEventListener("mouseup", stopDrawing);
             canvas.addEventListener("mouseout", stopDrawing);
 
-            canvas.addEventListener("touchstart", startDrawing);
-            canvas.addEventListener("touchmove", draw);
-            document.addEventListener("touchend", stopDrawing);
+            function getTouchCoords(e) {
+        const bounds = canvas.getBoundingClientRect();
+        const x = e.touches[0].clientX - bounds.left - (canvas.width - video.width) / 2;
+        const y = e.touches[0].clientY - bounds.top - (canvas.height - video.height) / 2;
+
+        return { x: Math.max(0, Math.min(x, canvas.width)), y: Math.max(0, Math.min(y, canvas.height)) };
+    }
+
+    function drawStart(e) {
+        e.preventDefault();
+        const { x, y } = getTouchCoords(e);
+        startDrawing({ clientX: x, clientY: y });
+    }
+
+    function drawMove(e) {
+        e.preventDefault();
+        const { x, y } = getTouchCoords(e);
+        draw({ clientX: x, clientY: y });
+    }
+
+    canvas.addEventListener("touchstart", drawStart);
+    canvas.addEventListener("touchmove", drawMove);
+    document.addEventListener("touchend", stopDrawing);
+    document.addEventListener("touchcancel", stopDrawing);
     
             document.getElementById("textInput").addEventListener("input", function () {
                 textInput = this.value;
