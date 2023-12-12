@@ -3,8 +3,9 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>A WALL</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>REBEL WITHOUT A WALL</title>
+    <link rel="icon" href="links/favi.png" type="image/x-icon">
     
     <style>
         body {
@@ -17,6 +18,23 @@
             align-items: center;
             justify-content: center;
         }
+
+        
+
+        #title {
+            position: absolute;
+            top: 5%;
+            left: 220px;
+            transform: translateY(-50%);
+            color: white;
+            font-size: 30px;
+            font-family:Helvetica;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            font-weight: bold;
+            text-align: left;
+            white-space: nowrap;
+        }
+
 
         #container {
             position: relative;
@@ -35,6 +53,7 @@
             z-index: 2;
             background-color: white;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            touch-action: none;
         }
 
         #controls {
@@ -160,6 +179,9 @@
         <canvas id="canvas" width="1000" height="600"></canvas>
         </div>
 
+
+            <div id="title">My Wall</div>
+
             <div id="controls">
             <label for="brushType">Brush</label>
             <select id="brushType" class="brush-size">
@@ -167,6 +189,7 @@
             <option value="square">■</option>
             <option value="text">T</option>
             <option value="eraser">○</option>
+            <option value="dots">...</option>
             </select>
 
             <select id="brushSize" class="brush-size">
@@ -297,46 +320,53 @@
                 undoStack.push(canvas.toDataURL("image/png"));
             }
     
-            function startDrawing(e) {
-                isDrawing = true;
-                draw(e);
-                saveUndoState();
-            }
-    
             function draw(e) {
-                if (!isDrawing) return;
-    
-                const bounds = canvas.getBoundingClientRect();
-                let x = e.clientX - bounds.left - (canvas.width - video.width) / 2;
-                let y = e.clientY - bounds.top - (canvas.height - video.height) / 2;
-    
-                x = Math.max(0, Math.min(x, canvas.width));
-                y = Math.max(0, Math.min(y, canvas.height));
-    
-                context.lineWidth = brushSize;
-                context.lineCap = "round";
-                context.font = `${fontSize}px Helvetica, sans-serif`;
-    
-                if (currentBrushType === "round" || currentBrushType === "eraser") {
-                    context.globalCompositeOperation = currentBrushType === "round" ? "source-over" : "destination-out";
-                    context.strokeStyle = currentBrushType === "round" ? penColor : "rgba(0,0,0,1)";
-                    context.globalAlpha = currentBrushType === "round" ? brushTransparency / 100 : 1;
-                    context.lineTo(x, y);
-                    context.stroke();
-                    context.beginPath();
-                    context.moveTo(x, y);
-                } else if (currentBrushType === "square") {
-                    context.fillStyle = penColor;
-                    context.globalCompositeOperation = "source-over";
-                    context.globalAlpha = brushTransparency / 100;
-                    context.fillRect(x - brushSize / 2, y - brushSize / 2, brushSize, brushSize);
-                } else if (currentBrushType === "text") {
-                    context.fillStyle = penColor;
-                    context.globalCompositeOperation = "source-over";
-                    context.globalAlpha = brushTransparency / 100;
-                    context.fillText(textInput, x, y);
-                }
+    if (!isDrawing) return;
+
+    const bounds = canvas.getBoundingClientRect();
+    let x = e.clientX - bounds.left - (canvas.width - video.width) / 2;
+    let y = e.clientY - bounds.top - (canvas.height - video.height) / 2;
+
+    x = Math.max(0, Math.min(x, canvas.width));
+    y = Math.max(0, Math.min(y, canvas.height));
+
+    context.lineWidth = brushSize;
+    context.lineCap = "round";
+    context.font = `${fontSize}px Helvetica, sans-serif`;
+
+    if (currentBrushType === "round" || currentBrushType === "eraser") {
+        context.globalCompositeOperation = currentBrushType === "round" ? "source-over" : "destination-out";
+        context.strokeStyle = currentBrushType === "round" ? penColor : "rgba(0,0,0,1)";
+        context.globalAlpha = currentBrushType === "round" ? brushTransparency / 100 : 1;
+        context.lineTo(x, y);
+        context.stroke();
+        context.beginPath();
+        context.moveTo(x, y);
+    } else if (currentBrushType === "square") {
+        context.fillStyle = penColor;
+        context.globalCompositeOperation = "source-over";
+        context.globalAlpha = brushTransparency / 100;
+        context.fillRect(x - brushSize / 2, y - brushSize / 2, brushSize, brushSize);
+    } else if (currentBrushType === "text") {
+        context.fillStyle = penColor;
+        context.globalCompositeOperation = "source-over";
+        context.globalAlpha = brushTransparency / 100;
+        context.fillText(textInput, x, y);
+    } else if (currentBrushType === "dots") {
+        context.fillStyle = penColor;
+        context.globalCompositeOperation = "source-over";
+        context.globalAlpha = brushTransparency / 100;
+
+        for (let i = 0; i < brushSize; i++) {
+            for (let j = 0; j < brushSize; j++) {
+                context.beginPath();
+                context.arc(x + i, y + j, 1, 0, 2 * Math.PI);
+                context.fill();
             }
+        }
+    }
+    // Add more conditions for other brush types if needed
+}
     
             function stopDrawing() {
                 isDrawing = false;
@@ -345,6 +375,21 @@
                 }
                 context.globalAlpha = 1;
             }
+
+            function startDrawing(e) {
+    isDrawing = true;
+    saveUndoState();
+
+    const bounds = canvas.getBoundingClientRect();
+    let x = e.clientX - bounds.left - (canvas.width - video.width) / 2;
+    let y = e.clientY - bounds.top - (canvas.height - video.height) / 2;
+
+    x = Math.max(0, Math.min(x, canvas.width));
+    y = Math.max(0, Math.min(y, canvas.height));
+
+    context.beginPath();
+    context.moveTo(x, y);
+}
     
             function populateCameraOptions(devices) {
             const cameraSelect = document.getElementById("cameraSelect");
@@ -453,6 +498,10 @@
             canvas.addEventListener("mousemove", draw);
             document.addEventListener("mouseup", stopDrawing);
             canvas.addEventListener("mouseout", stopDrawing);
+
+            canvas.addEventListener("touchstart", startDrawing);
+            canvas.addEventListener("touchmove", draw);
+            document.addEventListener("touchend", stopDrawing);
     
             document.getElementById("textInput").addEventListener("input", function () {
                 textInput = this.value;
