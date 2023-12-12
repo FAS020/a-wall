@@ -500,12 +500,12 @@
             canvas.addEventListener("mouseout", stopDrawing);
 
             function getTouchCoords(e) {
-        const bounds = canvas.getBoundingClientRect();
-        const x = e.touches[0].clientX - bounds.left - (canvas.width - video.width) / 2;
-        const y = e.touches[0].clientY - bounds.top - (canvas.height - video.height) / 2;
+    const bounds = canvas.getBoundingClientRect();
+    const x = e.touches[0].clientX - bounds.left;
+    const y = e.touches[0].clientY - bounds.top;
 
-        return { x: Math.max(0, Math.min(x, canvas.width)), y: Math.max(0, Math.min(y, canvas.height)) };
-    }
+    return { x: Math.max(0, Math.min(x, canvas.width)), y: Math.max(0, Math.min(y, canvas.height)) };
+}
 
     function drawStart(e) {
         e.preventDefault();
