@@ -503,10 +503,14 @@
     const bounds = canvas.getBoundingClientRect();
     let x, y;
 
-    if (e.touches) {
+    if (e.touches && e.touches.length > 0) {
         // Touch events
         x = e.touches[0].clientX - bounds.left;
         y = e.touches[0].clientY - bounds.top;
+    } else if (e.changedTouches && e.changedTouches.length > 0) {
+        // Handle touchmove events
+        x = e.changedTouches[0].clientX - bounds.left;
+        y = e.changedTouches[0].clientY - bounds.top;
     } else {
         // Mouse events
         x = e.clientX - bounds.left - (canvas.width - video.width) / 2;
