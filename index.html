@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>REBEL WITHOUT A WALL</title>
+    
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            font-family: Helvetica, sans-serif;
+            font-size: 10pt;
+            background-color: #2b2b2b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #video {
+            border: 0px solid #000;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        #canvas {
+            position: absolute;
+            z-index: 2;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        #controls {
+            position: absolute;
+            top: 75px;
+            left: 75px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            z-index: 3;
+            background-color: #565656;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 85px;
+            height: 340px;
+        }
+
+        #controls-right #resetCanvas {
+            background-color: #ff3f3f;
+            color: #ffffff;
+        }
+
+        #controls-right #cameraSelect {
+            width: 125px;
+
+        }
+
+        #controls-right {
+            position: absolute;
+            top: 460px;
+            left: 75px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            z-index: 3;
+            width: 125px;
+        }
+
+        #controls-right #downloadCanvas {
+            background-color: #5faaff;
+            color: #ffffff;
+        }
+
+        #controls label,
+        #controls-right label {
+            color: white;
+            text-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        #controls select,
+        #controls-right select,
+        #controls input[type="range"],
+        #controls-right input[type="range"],
+        #controls input[type="color"],
+        #controls-right input[type="color"],
+        #controls button,
+        #controls-right button {
+            background-color: #555;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            margin: 5px 0;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        #controls button,
+        #controls-right button {
+            width: 100%;
+        }
+
+        #controls input[type="text"],
+        #controls-right input[type="text"] {
+            width: calc(100% - 10px);
+            padding: 8px;
+            box-sizing: border-box;
+        }
+
+        .brush-size,
+        #brushTransparency,
+        #colorPicker,
+        #fontSize,
+        #textInput {
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        #toggleCamera,
+        #cameraSelect,
+        #resetCanvas,
+        #downloadCanvas,
+        #undoCanvas {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        /* Adjusted the CSS for colorPicker to keep it within the control background */
+        #controls #colorPicker {
+            width: calc(100% - 10px);
+            margin-bottom: 15px;
+            padding: 0;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        /* Adjusted the CSS for brushTransparency to keep it within the control background */
+        #controls #brushTransparency {
+            width: calc(100% - 35px);
+            margin-bottom: 15px;
+        }
+    </style>
+        </head>
+
+        <body>
+        <div id="container">
+        <video id="video" width="1000" height="600" autoplay></video>
+        <canvas id="canvas" width="1000" height="600"></canvas>
+        </div>
+
+            <div id="controls">
+            <label for="brushType">Brush</label>
+            <select id="brushType" class="brush-size">
+            <option value="round">●</option>
+            <option value="square">■</option>
+            <option value="text">T</option>
+            <option value="eraser">○</option>
+            </select>
+
+            <select id="brushSize" class="brush-size">
+            <option value="3">3px</option>
+            <option value="6">6px</option>
+            <option value="12">12px</option>
+            <option value="24">24px</option>
+            <option value="36">36px</option>
+            <option value="48">48px</option>
+            <option value="60">60px</option>
+            <option value="120">120px</option>
+            </select>
+
+            <label for="brushTransparency">Opacity</label>
+            <input type="range" id="brushTransparency" min="3" max="100" step="1" value="100">
+
+            <label for="colorPicker">Color</label>
+            <input type="color" id="colorPicker" value="#000000">
+
+            <label for="textInput">Text</label>
+            <input type="text" id="textInput">
+
+            <select id="fontSize" class="brush-size">
+            <option value="3">3pt</option>
+            <option value="6">6pt</option>
+            <option value="12">12pt</option>
+            <option value="24">24pt</option>
+            <option value="36">36pt</option>
+            <option value="48">48pt</option>
+            <option value="60">60pt</option>
+            <option value="120">120pt</option>
+            </select>
+            </div>
+            <div id="controls-right">
+            <button id="toggleCamera">Camera On/Off</button>
+
+            <!-- Dropdown menu for selecting the camera -->
+            <select id="cameraSelect"></select>
+            <button id="downloadCanvas">⤓</button>
+            <button id="undoCanvas">↺</button>
+            <button id="resetCanvas">☒</button>
+        </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const video = document.getElementById("video");
+            const canvas = document.getElementById("canvas");
+            const context = canvas.getContext("2d");
+            let stream = null;
+            let isFrontCamera = true;
+            let undoStack = [];
+            let isDrawing = false;
+            let currentBrushType = "round";
+            let brushSize = 3;
+            let penColor = "#000000";
+            let fontSize = 18;
+            let textInput = "";
+            let brushTransparency = 60;
+    
+            canvas.style.backgroundColor = "white"; // Set initial background color
+    
+            document.addEventListener("keydown", function (e) {
+                if ((e.ctrlKey || e.metaKey) && e.key === "z") {
+                    undo();
+                    e.preventDefault();
+                }
+            });
+    
+            function loadSettings() {
+                currentBrushType = localStorage.getItem("brushType") || "round";
+                brushSize = parseInt(localStorage.getItem("brushSize"), 10) || 3;
+                penColor = localStorage.getItem("penColor") || "#000000";
+                fontSize = parseInt(localStorage.getItem("fontSize"), 10) || 18;
+                brushTransparency = parseInt(localStorage.getItem("brushTransparency"), 10) || 60;
+            }
+    
+            function saveSettings() {
+                localStorage.setItem("brushType", currentBrushType);
+                localStorage.setItem("brushSize", brushSize);
+                localStorage.setItem("penColor", penColor);
+                localStorage.setItem("fontSize", fontSize);
+                localStorage.setItem("brushTransparency", brushTransparency);
+            }
+    
+            function startCamera() {
+            const cameraSelect = document.getElementById("cameraSelect");
+            const selectedCameraId = cameraSelect.value;
+
+            if (selectedCameraId) {
+            navigator.mediaDevices.getUserMedia({
+            video: {
+                deviceId: { exact: selectedCameraId }
+            }
+            })
+            .then((newStream) => {
+                video.srcObject = newStream;
+                stream = newStream;
+                canvas.style.backgroundColor = "transparent"; // Set canvas background to transparent
+            })
+            .catch((error) => {
+                console.error("Error accessing camera:", error);
+            });
+            }
+            }
+    
+            function stopCamera() {
+                if (stream) {
+                    const tracks = stream.getTracks();
+                    tracks.forEach(track => track.stop());
+                    video.srcObject = null;
+                    stream = null;
+                    canvas.style.backgroundColor = "white"; // Set canvas background to white
+                }
+            }
+    
+            function undo() {
+                if (undoStack.length > 0) {
+                    const img = new Image();
+                    img.src = undoStack.pop();
+                    img.onload = function () {
+                        context.clearRect(0, 0, canvas.width, canvas.height);
+                        context.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    };
+                }
+            }
+    
+            function saveUndoState() {
+                undoStack.push(canvas.toDataURL("image/png"));
+            }
+    
+            function startDrawing(e) {
+                isDrawing = true;
+                draw(e);
+                saveUndoState();
+            }
+    
+            function draw(e) {
+                if (!isDrawing) return;
+    
+                const bounds = canvas.getBoundingClientRect();
+                let x = e.clientX - bounds.left - (canvas.width - video.width) / 2;
+                let y = e.clientY - bounds.top - (canvas.height - video.height) / 2;
+    
+                x = Math.max(0, Math.min(x, canvas.width));
+                y = Math.max(0, Math.min(y, canvas.height));
+    
+                context.lineWidth = brushSize;
+                context.lineCap = "round";
+                context.font = `${fontSize}px Helvetica, sans-serif`;
+    
+                if (currentBrushType === "round" || currentBrushType === "eraser") {
+                    context.globalCompositeOperation = currentBrushType === "round" ? "source-over" : "destination-out";
+                    context.strokeStyle = currentBrushType === "round" ? penColor : "rgba(0,0,0,1)";
+                    context.globalAlpha = currentBrushType === "round" ? brushTransparency / 100 : 1;
+                    context.lineTo(x, y);
+                    context.stroke();
+                    context.beginPath();
+                    context.moveTo(x, y);
+                } else if (currentBrushType === "square") {
+                    context.fillStyle = penColor;
+                    context.globalCompositeOperation = "source-over";
+                    context.globalAlpha = brushTransparency / 100;
+                    context.fillRect(x - brushSize / 2, y - brushSize / 2, brushSize, brushSize);
+                } else if (currentBrushType === "text") {
+                    context.fillStyle = penColor;
+                    context.globalCompositeOperation = "source-over";
+                    context.globalAlpha = brushTransparency / 100;
+                    context.fillText(textInput, x, y);
+                }
+            }
+    
+            function stopDrawing() {
+                isDrawing = false;
+                if (currentBrushType === "round") {
+                    context.beginPath();
+                }
+                context.globalAlpha = 1;
+            }
+    
+            function populateCameraOptions(devices) {
+            const cameraSelect = document.getElementById("cameraSelect");
+            cameraSelect.innerHTML = '';
+    
+            devices.forEach(device => {
+                if (device.kind === 'videoinput') {
+                const option = document.createElement('option');
+                option.value = device.deviceId;
+                option.text = device.label || `Camera ${cameraSelect.length + 1}`;
+                cameraSelect.add(option);
+            }
+            });
+            }
+    
+            function listDevices() {
+            const cameraSelect = document.getElementById("cameraSelect");
+    
+            navigator.mediaDevices.enumerateDevices()
+            .then(devices => {
+            const videoDevices = devices.filter(device => device.kind === 'videoinput');
+            
+            // Clear existing options
+            cameraSelect.innerHTML = '';
+
+            // Add default option
+            const defaultOption = document.createElement('option');
+            defaultOption.value = '';
+            defaultOption.text = 'Select Camera';
+            cameraSelect.add(defaultOption);
+
+            videoDevices.forEach(device => {
+                const option = document.createElement('option');
+                option.value = device.deviceId;
+                option.text = device.label || `Camera ${cameraSelect.length}`;
+                cameraSelect.add(option);
+            });
+            })
+
+            .catch(error => {
+            console.error('Error listing devices:', error);
+            });
+            }
+    
+            loadSettings();
+    
+            document.getElementById("undoCanvas").addEventListener("click", undo);
+    
+            document.getElementById("brushType").addEventListener("change", function () {
+                currentBrushType = this.value;
+                saveSettings();
+            });
+    
+            document.getElementById("brushSize").addEventListener("change", function () {
+                brushSize = parseInt(this.value, 10);
+                saveSettings();
+            });
+    
+            document.getElementById("brushTransparency").addEventListener("input", function () {
+                brushTransparency = parseInt(this.value, 10);
+                saveSettings();
+            });
+    
+            document.getElementById("colorPicker").addEventListener("input", function () {
+                penColor = this.value;
+                saveSettings();
+            });
+    
+            document.getElementById("fontSize").addEventListener("change", function () {
+                fontSize = parseInt(this.value, 10);
+                saveSettings();
+            });
+    
+            document.getElementById("resetCanvas").addEventListener("click", function () {
+                context.clearRect(0, 0, canvas.width, canvas.height);
+                saveUndoState();
+            });
+    
+            document.getElementById("toggleCamera").addEventListener("click", function () {
+                if (stream) {
+                    stopCamera();
+                } else {
+                    startCamera();
+                }
+            });
+    
+            document.getElementById("downloadCanvas").addEventListener("click", function () {
+                const combinedCanvas = document.createElement('canvas');
+                combinedCanvas.width = canvas.width;
+                combinedCanvas.height = canvas.height;
+                const combinedContext = combinedCanvas.getContext('2d');
+    
+                combinedContext.drawImage(video, 0, 0, canvas.width, canvas.height);
+                combinedContext.drawImage(canvas, 0, 0, canvas.width, canvas.height);
+    
+                const combinedCanvasDataUrl = combinedCanvas.toDataURL("image/png");
+                const downloadLink = document.createElement("a");
+                downloadLink.href = combinedCanvasDataUrl;
+                downloadLink.download = "combined_canvas_image.png";
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                document.body.removeChild(downloadLink);
+            });
+    
+            canvas.addEventListener("mousedown", startDrawing);
+            canvas.addEventListener("mousemove", draw);
+            document.addEventListener("mouseup", stopDrawing);
+            canvas.addEventListener("mouseout", stopDrawing);
+    
+            document.getElementById("textInput").addEventListener("input", function () {
+                textInput = this.value;
+            });
+    
+            // Call listDevices to display available cameras in the console
+            listDevices();
+        });
+
+    </script>
+    
+    </body>
+    
+    </html>
+    
