@@ -19,7 +19,6 @@
             justify-content: center;
         }
 
-        
 
         #title {
             position: absolute;
@@ -43,10 +42,12 @@
             justify-content: center;
         }
 
+
         #video {
             border: 0px solid #000;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
+
 
         #canvas {
             position: absolute;
@@ -55,6 +56,7 @@
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             touch-action: none;
         }
+
 
         #controls {
             position: absolute;
@@ -72,15 +74,17 @@
             height: 340px;
         }
 
+
         #controls-right #resetCanvas {
             background-color: #ff3f3f;
             color: #ffffff;
         }
 
+
         #controls-right #cameraSelect {
             width: 125px;
-
         }
+
 
         #controls-right {
             position: absolute;
@@ -93,16 +97,19 @@
             width: 125px;
         }
 
+
         #controls-right #downloadCanvas {
             background-color: #5faaff;
             color: #ffffff;
         }
+
 
         #controls label,
         #controls-right label {
             color: white;
             text-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
         }
+
 
         #controls select,
         #controls-right select,
@@ -121,10 +128,12 @@
             border-radius: 5px;
         }
 
+
         #controls button,
         #controls-right button {
             width: 100%;
         }
+
 
         #controls input[type="text"],
         #controls-right input[type="text"] {
@@ -132,6 +141,7 @@
             padding: 8px;
             box-sizing: border-box;
         }
+
 
         .brush-size,
         #brushTransparency,
@@ -142,6 +152,7 @@
             text-align: center;
         }
 
+
         #toggleCamera,
         #cameraSelect,
         #resetCanvas,
@@ -150,10 +161,12 @@
             margin-bottom: 15px;
         }
 
+
         label {
             display: block;
             margin-bottom: 5px;
         }
+
 
         /* Adjusted the CSS for colorPicker to keep it within the control background */
         #controls #colorPicker {
@@ -165,22 +178,30 @@
             border-radius: 5px;
         }
 
+
         /* Adjusted the CSS for brushTransparency to keep it within the control background */
         #controls #brushTransparency {
             width: calc(100% - 35px);
             margin-bottom: 15px;
         }
-    </style>
-        </head>
 
-        <body>
-        <div id="container">
-        <video id="video" width="1000" height="600" autoplay></video>
-        <canvas id="canvas" width="1000" height="600"></canvas>
-        </div>
+
+    </style>
+    
+
+</head>
+
+
+    <body>
+        
+            <div id="container">
+            <video id="video" width="1000" height="600" autoplay></video>
+            <canvas id="canvas" width="1000" height="600"></canvas>
+            </div>
 
 
             <div id="title">My Wall</div>
+
 
             <div id="controls">
             <label for="brushType">Brush</label>
@@ -223,6 +244,7 @@
             <option value="120">120pt</option>
             </select>
             </div>
+
             <div id="controls-right">
             <button id="toggleCamera">Camera On/Off</button>
 
@@ -231,10 +253,13 @@
             <button id="downloadCanvas">⤓</button>
             <button id="undoCanvas">↺</button>
             <button id="resetCanvas">☒</button>
-        </div>
+            </div>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
+
+        <script>
+
+
+            document.addEventListener("DOMContentLoaded", function () {
             const video = document.getElementById("video");
             const canvas = document.getElementById("canvas");
             const context = canvas.getContext("2d");
@@ -252,11 +277,11 @@
             canvas.style.backgroundColor = "white"; // Set initial background color
     
             document.addEventListener("keydown", function (e) {
-                if ((e.ctrlKey || e.metaKey) && e.key === "z") {
+            if ((e.ctrlKey || e.metaKey) && e.key === "z") {
                     undo();
                     e.preventDefault();
                 }
-            });
+                });
     
             function loadSettings() {
                 currentBrushType = localStorage.getItem("brushType") || "round";
@@ -321,89 +346,96 @@
             }
     
             function draw(e) {
-    if (!isDrawing) return;
+            if (!isDrawing) return;
 
-    const bounds = canvas.getBoundingClientRect();
-    let x = e.clientX - bounds.left - (canvas.width - video.width) / 2;
-    let y = e.clientY - bounds.top - (canvas.height - video.height) / 2;
+            const bounds = canvas.getBoundingClientRect();
+            let x = e.clientX - bounds.left - (canvas.width - video.width) / 2;
+            let y = e.clientY - bounds.top - (canvas.height - video.height) / 2;
 
-    x = Math.max(0, Math.min(x, canvas.width));
-    y = Math.max(0, Math.min(y, canvas.height));
+            x = Math.max(0, Math.min(x, canvas.width));
+            y = Math.max(0, Math.min(y, canvas.height));
 
-    context.lineWidth = brushSize;
-    context.lineCap = "round";
-    context.font = `${fontSize}px Helvetica, sans-serif`;
+            context.lineWidth = brushSize;
+            context.lineCap = "round";
+            context.font = `${fontSize}px Helvetica, sans-serif`;
 
-    if (currentBrushType === "round" || currentBrushType === "eraser") {
-        context.globalCompositeOperation = currentBrushType === "round" ? "source-over" : "destination-out";
-        context.strokeStyle = currentBrushType === "round" ? penColor : "rgba(0,0,0,1)";
-        context.globalAlpha = currentBrushType === "round" ? brushTransparency / 100 : 1;
-        context.lineTo(x, y);
-        context.stroke();
-        context.beginPath();
-        context.moveTo(x, y);
-    } else if (currentBrushType === "square") {
-        context.fillStyle = penColor;
-        context.globalCompositeOperation = "source-over";
-        context.globalAlpha = brushTransparency / 100;
-        context.fillRect(x - brushSize / 2, y - brushSize / 2, brushSize, brushSize);
-    } else if (currentBrushType === "text") {
-        context.fillStyle = penColor;
-        context.globalCompositeOperation = "source-over";
-        context.globalAlpha = brushTransparency / 100;
-        context.fillText(textInput, x, y);
-    } else if (currentBrushType === "dots") {
-        context.fillStyle = penColor;
-        context.globalCompositeOperation = "source-over";
-        context.globalAlpha = brushTransparency / 100;
+            if (currentBrushType === "round" || currentBrushType === "eraser") {
+            context.globalCompositeOperation = currentBrushType === "round" ? "source-over" : "destination-out";
+            context.strokeStyle = currentBrushType === "round" ? penColor : "rgba(0,0,0,1)";
+            context.globalAlpha = currentBrushType === "round" ? brushTransparency / 100 : 1;
+            context.lineTo(x, y);
+            context.stroke();
+            context.beginPath();
+            context.moveTo(x, y);
+            } 
 
-        for (let i = 0; i < brushSize; i++) {
+            else if (currentBrushType === "square") {
+            context.fillStyle = penColor;
+            context.globalCompositeOperation = "source-over";
+            context.globalAlpha = brushTransparency / 100;
+            context.fillRect(x - brushSize / 2, y - brushSize / 2, brushSize, brushSize);
+            } 
+
+            else if (currentBrushType === "text") {
+            context.fillStyle = penColor;
+            context.globalCompositeOperation = "source-over";
+            context.globalAlpha = brushTransparency / 100;
+            context.fillText(textInput, x, y);
+            } 
+
+            else if (currentBrushType === "dots") {
+            context.fillStyle = penColor;
+            context.globalCompositeOperation = "source-over";
+            context.globalAlpha = brushTransparency / 100;
+
+            for (let i = 0; i < brushSize; i++) {
             for (let j = 0; j < brushSize; j++) {
-                context.beginPath();
-                context.arc(x + i, y + j, 1, 0, 2 * Math.PI);
-                context.fill();
+            context.beginPath();
+            context.arc(x + i, y + j, 1, 0, 2 * Math.PI);
+            context.fill();}}
             }
-        }
-    }
-    // Add more conditions for other brush types if needed
-}
+
+            }
     
             function stopDrawing() {
                 isDrawing = false;
                 if (currentBrushType === "round") {
-                    context.beginPath();
+                context.beginPath();
                 }
+
                 context.globalAlpha = 1;
             }
 
             function startDrawing(e) {
-    isDrawing = true;
-    saveUndoState();
+            isDrawing = true;
+            saveUndoState();
 
-    const bounds = canvas.getBoundingClientRect();
-    let x = e.clientX - bounds.left - (canvas.width - video.width) / 2;
-    let y = e.clientY - bounds.top - (canvas.height - video.height) / 2;
+            const bounds = canvas.getBoundingClientRect();
+            let x = e.clientX - bounds.left - (canvas.width - video.width) / 2;
+            let y = e.clientY - bounds.top - (canvas.height - video.height) / 2;
 
-    x = Math.max(0, Math.min(x, canvas.width));
-    y = Math.max(0, Math.min(y, canvas.height));
+            x = Math.max(0, Math.min(x, canvas.width));
+            y = Math.max(0, Math.min(y, canvas.height));
 
-    context.beginPath();
-    context.moveTo(x, y);
-}
+            context.beginPath();
+            context.moveTo(x, y);
+            }
     
-            function populateCameraOptions(devices) {
-            const cameraSelect = document.getElementById("cameraSelect");
-            cameraSelect.innerHTML = '';
+
+                function populateCameraOptions(devices) {
+                const cameraSelect = document.getElementById("cameraSelect");
+                cameraSelect.innerHTML = '';
     
-            devices.forEach(device => {
+                devices.forEach(device => {
                 if (device.kind === 'videoinput') {
                 const option = document.createElement('option');
                 option.value = device.deviceId;
                 option.text = device.label || `Camera ${cameraSelect.length + 1}`;
                 cameraSelect.add(option);
-            }
-            });
-            }
+                }
+                });
+
+                }
     
             function listDevices() {
             const cameraSelect = document.getElementById("cameraSelect");
@@ -492,52 +524,54 @@
                 document.body.appendChild(downloadLink);
                 downloadLink.click();
                 document.body.removeChild(downloadLink);
-            });
+                });
     
-            canvas.addEventListener("mousedown", startDrawing);
-            canvas.addEventListener("mousemove", draw);
-            document.addEventListener("mouseup", stopDrawing);
-            canvas.addEventListener("mouseout", stopDrawing);
+                canvas.addEventListener("mousedown", startDrawing);
+                canvas.addEventListener("mousemove", draw);
+                document.addEventListener("mouseup", stopDrawing);
+                canvas.addEventListener("mouseout", stopDrawing);
 
-            function getCoords(e) {
+
+                function getTouchCoords(e) {
     const bounds = canvas.getBoundingClientRect();
+    const touch = e.touches[0];
     return {
-        x: e.touches[0].clientX - bounds.left,
-        y: e.touches[0].clientY - bounds.top
+        x: touch.clientX - bounds.left - (canvas.width - video.width) / 2,
+        y: touch.clientY - bounds.top - (canvas.height - video.height) / 2
     };
 }
 
-
-function drawStart(e) {
+function touchDrawStart(e) {
     e.preventDefault();
-    const { x, y } = getCoords(e);
+    const { x, y } = getTouchCoords(e);
     startDrawing({ clientX: x, clientY: y });
 }
 
-function drawMove(e) {
+function touchDrawMove(e) {
     e.preventDefault();
-    const { x, y } = getCoords(e);
+    const { x, y } = getTouchCoords(e);
     draw({ clientX: x, clientY: y });
 }
 
-function drawEnd(e) {
+function touchDrawEnd(e) {
     e.preventDefault();
     stopDrawing();
 }
 
-canvas.addEventListener("touchstart", drawStart);
-canvas.addEventListener("touchmove", drawMove);
-canvas.addEventListener("touchend", drawEnd);
-canvas.addEventListener("touchcancel", drawEnd);
+canvas.addEventListener("touchstart", touchDrawStart);
+canvas.addEventListener("touchmove", touchDrawMove);
+canvas.addEventListener("touchend", touchDrawEnd);
+canvas.addEventListener("touchcancel", touchDrawEnd);
+
 
     
-            document.getElementById("textInput").addEventListener("input", function () {
+                document.getElementById("textInput").addEventListener("input", function () {
                 textInput = this.value;
-            });
+                });
     
-            // Call listDevices to display available cameras in the console
-            listDevices();
-        });
+                // Call listDevices to display available cameras in the console
+                listDevices();
+                });
 
     </script>
     
