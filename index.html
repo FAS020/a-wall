@@ -534,27 +534,23 @@
 
                 function getTouchCoords(e) {
     const bounds = canvas.getBoundingClientRect();
-    const touch = e.changedTouches[0]; // Use changedTouches to get information about the changed touches
+    const touch = e.changedTouches[0];
     return {
-        x: (touch.clientX - bounds.left) * (canvas.width / bounds.width),
-        y: (touch.clientY - bounds.top) * (canvas.height / bounds.height)
+        x: touch.clientX - bounds.left,
+        y: touch.clientY - bounds.top
     };
 }
 
 function touchDrawStart(e) {
     e.preventDefault();
-    for (let i = 0; i < e.changedTouches.length; i++) {
-        const { x, y } = getTouchCoords(e.changedTouches[i]);
-        startDrawing({ clientX: x, clientY: y });
-    }
+    const { x, y } = getTouchCoords(e);
+    startDrawing({ clientX: x, clientY: y });
 }
 
 function touchDrawMove(e) {
     e.preventDefault();
-    for (let i = 0; i < e.changedTouches.length; i++) {
-        const { x, y } = getTouchCoords(e.changedTouches[i]);
-        draw({ clientX: x, clientY: y });
-    }
+    const { x, y } = getTouchCoords(e);
+    draw({ clientX: x, clientY: y });
 }
 
 function touchDrawEnd(e) {
@@ -566,6 +562,7 @@ canvas.addEventListener("touchstart", touchDrawStart);
 canvas.addEventListener("touchmove", touchDrawMove);
 canvas.addEventListener("touchend", touchDrawEnd);
 canvas.addEventListener("touchcancel", touchDrawEnd);
+
 
 
 
