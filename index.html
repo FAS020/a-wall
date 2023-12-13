@@ -533,35 +533,34 @@
 
 
                 function getTouchCoords(e) {
-    const bounds = canvas.getBoundingClientRect();
-    const touch = e.changedTouches[0];
-    return {
-        x: touch.clientX - bounds.left,
-        y: touch.clientY - bounds.top
-    };
-}
+                const bounds = canvas.getBoundingClientRect();
+                const touch = e.changedTouches[0];
+                return {
+                x: touch.clientX - bounds.left,
+                y: touch.clientY - bounds.top};
+                }
 
-function touchDrawStart(e) {
-    e.preventDefault();
-    const { x, y } = getTouchCoords(e);
-    startDrawing({ clientX: x, clientY: y });
-}
+                function touchDrawStart(e) {
+                e.preventDefault();
+                const { x, y } = getTouchCoords(e);
+                startDrawing({ clientX: x, clientY: y });
+                }
 
-function touchDrawMove(e) {
-    e.preventDefault();
-    const { x, y } = getTouchCoords(e);
-    draw({ clientX: x, clientY: y });
-}
+                function touchDrawMove(e) {
+                e.preventDefault();
+                const { x, y } = getTouchCoords(e);
+                draw({ clientX: x, clientY: y });
+                }
 
-function touchDrawEnd(e) {
-    e.preventDefault();
-    stopDrawing();
-}
+                function touchDrawEnd(e) {
+                e.preventDefault();
+                stopDrawing();
+                }
 
-canvas.addEventListener("touchstart", touchDrawStart);
-canvas.addEventListener("touchmove", touchDrawMove);
-canvas.addEventListener("touchend", touchDrawEnd);
-canvas.addEventListener("touchcancel", touchDrawEnd);
+                canvas.addEventListener("touchstart", touchDrawStart);
+                canvas.addEventListener("touchmove", touchDrawMove);
+                canvas.addEventListener("touchend", touchDrawEnd);
+                canvas.addEventListener("touchcancel", touchDrawEnd);
 
 
 
