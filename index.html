@@ -532,7 +532,7 @@
                 canvas.addEventListener("mouseout", stopDrawing);
 
 
-                function getTouchCoords(e) {
+                function setTouchCoords(e) {
                 const bounds = canvas.getBoundingClientRect();
                 const touch = e.changedTouches[0];
                 return {
